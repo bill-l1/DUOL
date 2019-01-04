@@ -44,7 +44,7 @@ public class EndlessActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.game_screen);
+
         sensorIntent = new Intent();
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
                 new IntentFilter("result"));
@@ -56,8 +56,23 @@ public class EndlessActivity extends Activity {
 
         roundHandler = new Handler();
 
-        roundHandler.post(initRound);
+        roundHandler.post(initRound(INIT_WINDOW));
 
+        initScreen();
+
+        lives = 3;
+        score = 0;
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        pauseGame();
+        Log.d("EndlessActivity", "GONE TO DRAWER");
+    }
+
+    private void initScreen(){
+        setContentView(R.layout.game_screen);
         defenseDirection = findViewById(R.id.defenseDirection);
         defenseStatement = findViewById(R.id.defenseStatement);
 
@@ -73,9 +88,6 @@ public class EndlessActivity extends Activity {
                 pauseGame();
             }
         });
-
-        lives = 3;
-        score = 0;
     }
 
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
@@ -83,6 +95,7 @@ public class EndlessActivity extends Activity {
         public void onReceive(Context context, Intent intent) {
             // Get extra data included in the Intent
             int result = intent.getIntExtra("result", 1);
+            int sendResult = 0;
 
             //Log.d("receiver", "Got message: " + Integer.toString(result));
             if(sensorToggled) {
@@ -105,115 +118,143 @@ public class EndlessActivity extends Activity {
                 }
 
 
-                //displays results to player
+                //figures out what to send to endRound
                 if(playState == result){
-                    Log.d("MainActivity", "HIT!");
-                    defenseStatement.setText("Parried!");
-                    defenseDirection.setText("✓");
-                    score++;
+                    sendResult = 1;
                     //Toast.makeText(getApplicationContext(), ("YOU PARRIED!"), Toast.LENGTH_SHORT).show();
 
                 }else{
-                    Log.d("MainActivity", "WRONG MOTION!");
-                    defenseStatement.setText("Missed!");
-                    defenseDirection.setText("✖");
-                    lives--;
+                    sendResult = 2;
                     //Toast.makeText(getApplicationContext(), ("YOU WERE HIT!"), Toast.LENGTH_SHORT).show();
                 }
 
                 sensorToggled = false;
 
                 //end round early after receiving input
-                roundHandler.removeCallbacks(endRound);
-                roundHandler.post(endRound);
+                roundHandler.removeCallbacksAndMessages(null);
+                roundHandler.post(endRound(END_WINDOW, sendResult));
             }
         }
     };
-
     //waiting...
-    private Runnable initRound = new Runnable(){
-        @Override
-        public void run(){
-            gameState = 0;
-            if(lives <= 0){
-                roundHandler.removeCallbacks(null);
-                setContentView(R.layout.endless_resolve);
-                Button returnButton = findViewById(R.id.returnButton);
-                returnButton.setOnClickListener(new View.OnClickListener() {
+    private Runnable initRound(final long duration){
+        Runnable initRunnable = new Runnable(){
+            @Override
+            public void run(){
+                gameState = 0;
+                if(lives <= 0){
+                    roundHandler.removeCallbacks(null);
+                    setContentView(R.layout.endless_resolve);
+                    Button returnButton = findViewById(R.id.returnButton);
+                    returnButton.setOnClickListener(new View.OnClickListener() {
 
-                    @Override
-                    public void onClick(View v) {
-                        startMain();
-                    }
-                });
-                TextView newScoreText = findViewById(R.id.score);
-                newScoreText.setText(Integer.toString(score));
-            }else{
-                defenseDirection.setText(" ");
-                defenseStatement.setText("Waiting...");
-                Log.d("EndlessActivity", "STARTING NEW ROUND...");
-                roundHandler.postDelayed(startRound, INIT_WINDOW);
-                endState();
+                        @Override
+                        public void onClick(View v) {
+                            startMain();
+                        }
+                    });
+                    TextView newScoreText = findViewById(R.id.score);
+                    newScoreText.setText(Integer.toString(score));
+                }else{
+                    defenseDirection.setText(" ");
+                    defenseStatement.setText("Waiting...");
+                    Log.d("EndlessActivity", "STARTING NEW ROUND...");
+                    roundHandler.postDelayed(startRound(START_WINDOW), duration);
+                }
+                startState();
             }
-        }
 
-    };
+        };
+        return initRunnable;
+    }
 
     //waits for input
     //myHandler.removeCallbacks(myRunnable); use this to cancel early
-    private Runnable startRound = new Runnable(){
-        @Override
-        public void run(){
-            gameState = 1;
-            playState = (int)(Math.random()*4+1);
 
-            defenseStatement.setText("SWIPE!");
-            switch(playState) {
-                case 1:
-                    Log.d("EndlessActivity", "SWIPE LEFT!");
-                    defenseDirection.setText("←");
-                    break;
-                case 2:
-                    Log.d("EndlessActivity", "SWIPE UP!");
-                    defenseDirection.setText("↑");
-                    break;
-                case 3:
-                    Log.d("EndlessActivity", "SWIPE RIGHT!");
-                    defenseDirection.setText("→");
-                    break;
-                case 4:
-                    Log.d("EndlessActivity", "SWIPE DOWN!");
-                    defenseDirection.setText("↓");
-                    break;
-                default:
-                    Log.d("EndlessActivity", "HOW DOES THIS EVEN HAPPEN");
-                    break;
+    private Runnable startRound(final long duration){
+        Runnable startRunnable = new Runnable(){
+            @Override
+            public void run(){
+                gameState = 1;
+                if(duration == START_WINDOW) {
+                    playState = (int) (Math.random() * 4 + 1);
+                    v.vibrate(100); //vibrate each new "turn"
+                }
+
+                defenseStatement.setText("SWIPE!");
+                switch(playState) {
+                    case 1:
+                        Log.d("EndlessActivity", "SWIPE LEFT!");
+                        defenseDirection.setText("←");
+                        break;
+                    case 2:
+                        Log.d("EndlessActivity", "SWIPE UP!");
+                        defenseDirection.setText("↑");
+                        break;
+                    case 3:
+                        Log.d("EndlessActivity", "SWIPE RIGHT!");
+                        defenseDirection.setText("→");
+                        break;
+                    case 4:
+                        Log.d("EndlessActivity", "SWIPE DOWN!");
+                        defenseDirection.setText("↓");
+                        break;
+                    default:
+                        Log.d("EndlessActivity", "HOW DOES THIS EVEN HAPPEN");
+                        break;
+                }
+
+                sensorToggled = true;
+
+                roundHandler.postDelayed(endRound(END_WINDOW, 0), duration);
+                startState();
             }
 
-            v.vibrate(100); //vibrate each new "turn"
-            sensorToggled = true;
+        };
+        return startRunnable;
+    }
 
-            roundHandler.postDelayed(endRound, START_WINDOW);
-            endState();
-        }
-
-    };
 
     //shows result
-    private Runnable endRound = new Runnable(){
-        @Override
-        public void run(){
-            gameState = 2;
-            Log.d("EndlessActivity", "ENDING ROUND");
+    private Runnable endRound(final long duration, final int result){
+        //0 - nothing, 1 - hit, 2 - miss
+        Runnable endRunnable = new Runnable(){
+            @Override
+            public void run(){
+                gameState = 2;
 
-            playState = -1;
-            sensorToggled = false;
+                //displays results to player
+                if(result == 0) {
+                    Log.d("MainActivity", "ROUND END, NO ACTION");
+                    defenseStatement.setText("Ending round...");
+                    defenseDirection.setText("...");
+                }else if(result == 1) {
+                    Log.d("MainActivity", "ROUND END, HIT!");
+                    defenseStatement.setText("Parried!");
+                    defenseDirection.setText("✓");
+                    score++;
+                    //Toast.makeText(getApplicationContext(), ("YOU PARRIED!"), Toast.LENGTH_SHORT).show();
 
-            roundHandler.postDelayed(initRound, END_WINDOW);
-            endState();
-        }
+                }else if(result == 2){
+                    Log.d("MainActivity", "ROUND END, WRONG MOTION!");
+                    defenseStatement.setText("Missed!");
+                    defenseDirection.setText("✖");
+                    lives--;
+                    //Toast.makeText(getApplicationContext(), ("YOU WERE HIT!"), Toast.LENGTH_SHORT).show();
+                }
 
-    };
+
+                playState = -1;
+                sensorToggled = false;
+
+                roundHandler.postDelayed(initRound(INIT_WINDOW), duration);
+                startState();
+            }
+
+        };
+        return endRunnable;
+    }
+
 
     public void startMain(){
         Intent i = new Intent(EndlessActivity.this, MainActivity.class);
@@ -223,46 +264,46 @@ public class EndlessActivity extends Activity {
     }
 
     private void pauseGame(){
-        roundHandler.removeCallbacks(null);
+        roundHandler.removeCallbacksAndMessages(null);
         sensorToggled = false;
         Runnable nextRunnable = null;
         long remainingTime = 0;
-        long elapsedTime = System.nanoTime() - stateTime;
+        long elapsedTime = System.currentTimeMillis() - stateTime;
         switch(gameState){
             case 0:
-                nextRunnable = startRound;
                 remainingTime = INIT_WINDOW - elapsedTime;
+                nextRunnable = initRound(remainingTime);
                 break;
             case 1:
-                nextRunnable = endRound;
                 remainingTime = START_WINDOW - elapsedTime;
-                sensorToggled = true; //put it back to original state
+                nextRunnable = startRound(remainingTime);
                 break;
             case 2:
                 remainingTime = END_WINDOW - elapsedTime;
-                nextRunnable = initRound;
+                nextRunnable = endRound(remainingTime, 0);
                 break;
         }
         setContentView(R.layout.endless_pause);
         Button returnButton = findViewById(R.id.returnButton);
+        Log.d("EndlessActivity", "GAME PAUSED");
 
-        final long finalRemainingTime = remainingTime;
         final Runnable finalNextRunnable = nextRunnable;
         returnButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                setContentView(R.layout.game_screen);
-                roundHandler.postDelayed(finalNextRunnable, finalRemainingTime);
+                initScreen();
+                Log.d("EndlessActivity", "GAME UNPAUSED");
+                roundHandler.postDelayed(finalNextRunnable, 0);
             }
         });
     }
 
 
-    //to be run after the end of each state
-    private void endState(){
+    //to be run after the start of each state
+    private void startState(){
         scoreText.setText(Integer.toString(score));
         livesText.setText(Integer.toString(lives));
-        stateTime = System.nanoTime();
+        stateTime = System.currentTimeMillis();
     }
 
 }
