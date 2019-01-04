@@ -93,7 +93,7 @@ public class SensorActivity extends Service implements SensorEventListener{
 
     }
 
-    public void sendDirection(int direction){
+    private void sendDirection(int direction){
         if(sendEnabled){
             Intent returnIntent = new Intent("result");
             returnIntent.putExtra("result", direction);
@@ -104,7 +104,7 @@ public class SensorActivity extends Service implements SensorEventListener{
         //Log.d("help", "help");
     }
 
-    public void coolDown(){
+    private void coolDown(){
         sendEnabled = false;
         timerTaskCD = new TimerTask() {
 

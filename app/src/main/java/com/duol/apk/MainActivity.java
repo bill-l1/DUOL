@@ -24,15 +24,15 @@ public class MainActivity extends Activity{
             };
     private static final int REQUEST_CODE_REQUIRED_PERMISSIONS = 1;
 
-    public boolean startConfirm = false;
-    public Boolean sensorToggled = true;
+    private boolean startConfirm = false;
+    private Boolean sensorToggled = true;
 
-    public TextView updateDefenseText;
-    public TextView defenseStatement;
+    private TextView updateDefenseText;
+    private TextView defenseStatement;
 
-    public static final Random rand = new Random();
+    private static final Random rand = new Random();
 
-    public Intent sensorIntent;
+    private Intent sensorIntent;
 
     Vibrator v;
 
@@ -72,7 +72,7 @@ public class MainActivity extends Activity{
     }
 
     //start singleplayer (triggered by button)
-    public void startSingleplayer(){
+    private void startSingleplayer(){
         Intent i = new Intent(MainActivity.this, EndlessActivity.class);
         //i.putExtra()
         startActivity(i);
@@ -82,7 +82,7 @@ public class MainActivity extends Activity{
     }
 
     //start multiplayer (triggered by button)
-    public void startMultiplayer(){
+    private void startMultiplayer(){
         Intent i = new Intent(MainActivity.this, MainActivity_Multi.class);
         //i.putExtra()
         startActivity(i);

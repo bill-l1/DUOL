@@ -16,30 +16,31 @@ import android.widget.TextView;
 
 public class EndlessActivity extends Activity {
 
-    public static int INIT_WINDOW = 1000; //TODO make this randomized eventually
-    public static int START_WINDOW = 2000;
-    public static int END_WINDOW = 2000;
+    private static int INIT_WINDOW = 1000; //TODO make this randomized eventually
+    private static int START_WINDOW = 2000;
+    private static int END_WINDOW = 2000;
 
-    public boolean sensorToggled = false;
-    public Intent sensorIntent;
+    private boolean sensorToggled = false;
+    private Intent sensorIntent;
 
-    public TextView defenseDirection;
-    public TextView defenseStatement;
-    public TextView scoreText;
-    public TextView livesText;
+    private TextView defenseDirection;
+    private TextView defenseStatement;
+    private TextView scoreText;
+    private TextView livesText;
 
     private Handler roundHandler;
 
-    Vibrator v;
+    private Vibrator v;
 
-    public int lives;
-    public int score;
+    private int lives;
+    private int score;
 
-    public int gameState = 0;
+    private int gameState = 0;
     //0 - wait  1 - play  2 - resolve
-    public long stateTime = 0;
 
-    public int playState = -1;
+    private long stateTime = 0;
+
+    private int playState = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -256,7 +257,7 @@ public class EndlessActivity extends Activity {
     }
 
 
-    public void startMain(){
+    private void startMain(){
         Intent i = new Intent(EndlessActivity.this, MainActivity.class);
         startActivity(i);
         //close this activity
