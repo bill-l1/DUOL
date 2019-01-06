@@ -8,10 +8,13 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Vibrator;
+import android.support.constraint.ConstraintLayout;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 public class EndlessActivity extends Activity {
@@ -22,6 +25,8 @@ public class EndlessActivity extends Activity {
 
     private boolean sensorToggled = false;
     private Intent sensorIntent;
+
+    private ConstraintLayout layout;
 
     private TextView defenseDirection;
     private TextView defenseStatement;
@@ -63,6 +68,7 @@ public class EndlessActivity extends Activity {
 
         lives = 3;
         score = 0;
+
     }
 
     @Override
@@ -74,6 +80,7 @@ public class EndlessActivity extends Activity {
 
     private void initScreen(){
         setContentView(R.layout.game_screen);
+        layout = findViewById(R.id.layout);
         defenseDirection = findViewById(R.id.defenseDirection);
         defenseStatement = findViewById(R.id.defenseStatement);
 
@@ -142,6 +149,7 @@ public class EndlessActivity extends Activity {
         Runnable initRunnable = new Runnable(){
             @Override
             public void run(){
+                layout.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.initBackgroundColor));
                 gameState = 0;
                 if(lives <= 0){
                     roundHandler.removeCallbacks(null);
@@ -176,6 +184,7 @@ public class EndlessActivity extends Activity {
         Runnable startRunnable = new Runnable(){
             @Override
             public void run(){
+                layout.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.startBackgroundColor));
                 gameState = 1;
                 if(duration == START_WINDOW) {
                     playState = (int) (Math.random() * 4 + 1);
@@ -227,10 +236,12 @@ public class EndlessActivity extends Activity {
                 //displays results to player
                 if(result == 0) {
                     Log.d("MainActivity", "ROUND END, NO ACTION");
+                    layout.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.endBackgroundColorNone));
                     defenseStatement.setText("Ending round...");
                     defenseDirection.setText("...");
                 }else if(result == 1) {
                     Log.d("MainActivity", "ROUND END, HIT!");
+                    layout.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.endBackgroundColorPass));
                     defenseStatement.setText("Parried!");
                     defenseDirection.setText("✓");
                     score++;
@@ -238,6 +249,7 @@ public class EndlessActivity extends Activity {
 
                 }else if(result == 2){
                     Log.d("MainActivity", "ROUND END, WRONG MOTION!");
+                    layout.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.endBackgroundColorFail));
                     defenseStatement.setText("Missed!");
                     defenseDirection.setText("✖");
                     lives--;
@@ -295,6 +307,14 @@ public class EndlessActivity extends Activity {
                 initScreen();
                 Log.d("EndlessActivity", "GAME UNPAUSED");
                 roundHandler.postDelayed(finalNextRunnable, 0);
+            }
+        });
+
+        Button endButton = findViewById(R.id.endButton);
+        endButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startMain();
             }
         });
     }

@@ -8,6 +8,7 @@
     <item name="colorAccent">@color/colorPrimary</item>
   </style>
 
+
   <style name="MoveButton" parent="Widget.AppCompat.Button.Borderless">
     <item name="android:layout_width">0dp</item>
     <item name="android:layout_height">wrap_content</item>
@@ -21,4 +22,24 @@
     <item name="android:layout_height">wrap_content</item>
     <item name="android:textSize">22sp</item>
   </style>
+
+    <style name="InitTheme" parent="AppTheme" >
+        <item name="android:colorBackground">@color/initBackgroundColor</item>
+    </style>
+
+    <style name="StartTheme" parent="AppTheme" >
+        <item name="android:colorBackground">@color/startBackgroundColor</item>
+    </style>
+
+    <style name="EndThemePass" parent="AppTheme" >
+        <item name="android:colorBackground">@color/endBackgroundColorPass</item>
+    </style>
+
+    <style name="EndThemeFail" parent="AppTheme" >
+        <item name="android:colorBackground">@color/endBackgroundColorFail</item>
+    </style>
+
+    <style name="EndThemeNone" parent="AppTheme" >
+        <item name="android:colorBackground">@color/endBackgroundColorNone</item>
+    </style>
 </resources>
