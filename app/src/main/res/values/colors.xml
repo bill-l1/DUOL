@@ -8,4 +8,5 @@
     <color name="endBackgroundColorPass">#69A84D</color>
     <color name="endBackgroundColorFail">#F90200</color>
     <color name="endBackgroundColorNone">#434343</color>
+    <color name="textColorPrimary">#FFFFFF</color>
 </resources>

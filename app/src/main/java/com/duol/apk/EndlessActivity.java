@@ -13,7 +13,11 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -28,10 +32,16 @@ public class EndlessActivity extends Activity {
 
     private ConstraintLayout layout;
 
-    private TextView defenseDirection;
+    //private TextView defenseDirection;
     private TextView defenseStatement;
     private TextView scoreText;
     private TextView livesText;
+
+    private Animation animShake;
+    private Animation animPop;
+    private ImageView defenseImage;
+
+    private ProgressBar timeBar;
 
     private Handler roundHandler;
 
@@ -64,6 +74,9 @@ public class EndlessActivity extends Activity {
 
         roundHandler.post(initRound(INIT_WINDOW));
 
+        animShake = AnimationUtils.loadAnimation(this, R.anim.shake);
+        animPop = AnimationUtils.loadAnimation(this, R.anim.pop);
+
         initScreen();
 
         lives = 3;
@@ -81,8 +94,12 @@ public class EndlessActivity extends Activity {
     private void initScreen(){
         setContentView(R.layout.game_screen);
         layout = findViewById(R.id.layout);
-        defenseDirection = findViewById(R.id.defenseDirection);
+        //defenseDirection = findViewById(R.id.defenseDirection);
         defenseStatement = findViewById(R.id.defenseStatement);
+
+        defenseImage = findViewById(R.id.defenseImage);
+
+        timeBar = findViewById(R.id.timeBar);
 
         scoreText = findViewById(R.id.score);
         livesText = findViewById(R.id.lives);
@@ -165,8 +182,9 @@ public class EndlessActivity extends Activity {
                     TextView newScoreText = findViewById(R.id.score);
                     newScoreText.setText(Integer.toString(score));
                 }else{
-                    defenseDirection.setText(" ");
-                    defenseStatement.setText("Waiting...");
+                    //defenseDirection.setText(" ");
+                    defenseStatement.setText("Ready...");
+                    defenseImage.setImageResource(R.drawable.ic_ellipsis);
                     Log.d("EndlessActivity", "STARTING NEW ROUND...");
                     roundHandler.postDelayed(startRound(START_WINDOW), duration);
                 }
@@ -191,23 +209,27 @@ public class EndlessActivity extends Activity {
                     v.vibrate(100); //vibrate each new "turn"
                 }
 
-                defenseStatement.setText("SWIPE!");
+                defenseStatement.setText("DUOL!");
                 switch(playState) {
                     case 1:
                         Log.d("EndlessActivity", "SWIPE LEFT!");
-                        defenseDirection.setText("←");
+                        //defenseDirection.setText("←");
+                        defenseImage.setImageResource(R.drawable.ic_arrow_left);
                         break;
                     case 2:
                         Log.d("EndlessActivity", "SWIPE UP!");
-                        defenseDirection.setText("↑");
+                        //defenseDirection.setText("↑");
+                        defenseImage.setImageResource(R.drawable.ic_arrow_up);
                         break;
                     case 3:
                         Log.d("EndlessActivity", "SWIPE RIGHT!");
-                        defenseDirection.setText("→");
+                        //defenseDirection.setText("→");
+                        defenseImage.setImageResource(R.drawable.ic_arrow_right);
                         break;
                     case 4:
                         Log.d("EndlessActivity", "SWIPE DOWN!");
-                        defenseDirection.setText("↓");
+                        //defenseDirection.setText("↓");
+                        defenseImage.setImageResource(R.drawable.ic_arrow_down);
                         break;
                     default:
                         Log.d("EndlessActivity", "HOW DOES THIS EVEN HAPPEN");
@@ -238,12 +260,15 @@ public class EndlessActivity extends Activity {
                     Log.d("MainActivity", "ROUND END, NO ACTION");
                     layout.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.endBackgroundColorNone));
                     defenseStatement.setText("Ending round...");
-                    defenseDirection.setText("...");
+                    //defenseDirection.setText("...");
+                    defenseImage.setImageResource(R.drawable.ic_ellipsis);
                 }else if(result == 1) {
                     Log.d("MainActivity", "ROUND END, HIT!");
                     layout.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.endBackgroundColorPass));
                     defenseStatement.setText("Parried!");
-                    defenseDirection.setText("✓");
+                    //defenseDirection.setText("✓");
+                    defenseImage.setImageResource(R.drawable.ic_check);
+                    defenseImage.startAnimation(animPop);
                     score++;
                     //Toast.makeText(getApplicationContext(), ("YOU PARRIED!"), Toast.LENGTH_SHORT).show();
 
@@ -251,7 +276,9 @@ public class EndlessActivity extends Activity {
                     Log.d("MainActivity", "ROUND END, WRONG MOTION!");
                     layout.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.endBackgroundColorFail));
                     defenseStatement.setText("Missed!");
-                    defenseDirection.setText("✖");
+                    //defenseDirection.setText("✖");
+                    defenseImage.setImageResource(R.drawable.ic_times);
+                    defenseImage.startAnimation(animShake);
                     lives--;
                     //Toast.makeText(getApplicationContext(), ("YOU WERE HIT!"), Toast.LENGTH_SHORT).show();
                 }
@@ -318,7 +345,6 @@ public class EndlessActivity extends Activity {
             }
         });
     }
-
 
     //to be run after the start of each state
     private void startState(){
